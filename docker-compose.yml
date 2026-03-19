@@ -1,0 +1,33 @@
+# version: '3.8'  # Compose file version
+
+services:
+
+  # ---------------- AUTH SERVICE ----------------
+  auth:
+    # build: auth-service   # Build image using Dockerfile in this folder
+    build: .   # use current folder ( Laravel project)
+    container_name: auth_service  # Custom name for container (used in CLI)
+
+    volumes:  
+      - .:/var/www
+      # Bind mount:
+      # Sync your local code with container
+      # So changes reflect instantly (no rebuild needed)
+
+    ports:
+      - "8001:8000"
+      # Map port:
+      # localhost:8001 → container:8000
+
+    networks:
+      - microservices-net  # connect to shared infra
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  microservices-net:
+    external: true   # use existing network

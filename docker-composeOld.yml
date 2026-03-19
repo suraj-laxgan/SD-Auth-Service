@@ -1,0 +1,83 @@
+# version: '3.8'  # Compose file version
+
+services:
+
+  # ---------------- AUTH SERVICE ----------------
+  auth:
+    # build: auth-service   # Build image using Dockerfile in this folder
+    build: .   # use current folder ( Laravel project)
+    container_name: auth_service  # Custom name for container (used in CLI)
+
+    volumes:  
+      - .:/var/www
+      # Bind mount:
+      # Sync your local code with container
+      # So changes reflect instantly (no rebuild needed)
+
+    ports:
+      - "8001:8000"
+      # Map port:
+      # localhost:8001 → container:8000
+
+    depends_on:
+      - mysql
+      - redis
+      # Ensures MySQL & Redis start before auth service
+
+
+  # ---------------- MYSQL DATABASE ----------------
+  mysql:
+    image: mysql:8   # Use official MySQL image (no need to install manually)
+    container_name: mysql_db
+
+    restart: always  # Automatically restart container if it crashes
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root   # Root password
+      MYSQL_DATABASE: auth_db     # Auto-create database
+
+    ports:
+      - "3310:3306"
+      # Host (your PC): 3310
+      # Container (MySQL): 3306
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Named volume:
+      # Persist database data (prevents data loss on restart)
+
+
+  # ---------------- PHPMYADMIN ----------------
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin  # Ready-to-use phpMyAdmin UI
+    container_name: phpmyadmin
+
+    restart: always
+
+    ports:
+      - "8080:80"
+      # Access phpMyAdmin via:
+      # http://localhost:8080
+
+    environment:
+      PMA_HOST: mysql   # Connect to MySQL service (service name)
+      PMA_PORT: 3306    # MySQL internal port
+
+    depends_on:
+      - mysql
+
+
+  # ---------------- REDIS ----------------
+  redis:
+    image: redis:alpine   # Lightweight Redis image
+    container_name: redis
+
+    ports:
+      - "6379:6379"
+      # Default Redis port
+
+
+# ---------------- VOLUMES ----------------
+volumes:
+  mysql_data:
+  # Named volume for MySQL data persistence
