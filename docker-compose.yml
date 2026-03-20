@@ -1,14 +1,13 @@
 # version: '3.8'  # Compose file version
 
 services:
-
   # ---------------- AUTH SERVICE ----------------
   auth:
     # build: auth-service   # Build image using Dockerfile in this folder
-    build: .   # use current folder ( Laravel project)
-    container_name: auth_service  # Custom name for container (used in CLI)
+    build: . # use current folder ( Laravel project)
+    container_name: auth_service # Custom name for container (used in CLI)
 
-    volumes:  
+    volumes:
       - .:/var/www
       # Bind mount:
       # Sync your local code with container
@@ -20,7 +19,7 @@ services:
       # localhost:8001 → container:8000
 
     networks:
-      - microservices-net  # connect to shared infra
+      - microservices-net # connect to shared infra
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -28,6 +27,21 @@ services:
       timeout: 5s
       retries: 5
 
+  # ---------------- Auth Worker ----------------
+  auth_worker:
+    build: .
+    container_name: auth_worker
+
+    command: php artisan queue:work --tries=3 --timeout=90
+
+    volumes:
+      - .:/var/www
+
+    networks:
+      - microservices-net
+    depends_on:
+      - auth # start after app
+
 networks:
   microservices-net:
-    external: true   # use existing network
+    external: true # use existing network

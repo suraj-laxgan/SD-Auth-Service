@@ -4,24 +4,18 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Event;
 use App\Repositories\Contracts\BaseRepositoryInterface;
+use App\Models\User;
 
 class BaseRepository implements BaseRepositoryInterface
 {
-    public function getAll(array $filters)
-    {
-        
-    }
-
-    public function findById(int $id)
-    {
-    }
-
     public function create(array $data)
     {
+        return User::create($data);
     }
 
-    public function register(int $eventId, array $data)
+    public function findByEmail(string $email)
     {
-       
+        return User::where('email', $email)->first();
     }
+    
 }
